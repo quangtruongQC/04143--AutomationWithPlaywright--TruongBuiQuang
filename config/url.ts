@@ -5,4 +5,6 @@ export const DEMOQA_ENDPOINT = {
     LOGIN: 'https://demoqa.com/login',
     PROFILE: 'https://demoqa.com/profile',
     BOOKSTORE: 'https://demoqa.com/books',
+    REGISTRATION: 'https://demoqa.com/automation-practice-form',
+    
 };

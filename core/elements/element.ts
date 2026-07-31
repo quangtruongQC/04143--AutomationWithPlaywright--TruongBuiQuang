@@ -42,7 +42,7 @@ export class Element {
 
     async shouldNotBeVisible() {
         console.log(`Assertion: Verifying '${this.description}' is NOT visible`);
-        await expect(this.locator).toHaveCount(0);
+        await expect(this.locator).toBeHidden();
     }
 
     async waitForElementState(state: 'visible' | 'hidden' | 'attached' | 'detached', timeout = 5000) {
@@ -52,7 +52,6 @@ export class Element {
 
     async getAllTexts(): Promise<string[]> {
         console.log(`Action: Retrieving all text strings from list '${this.description}'`);
-        await this.locator.first().waitFor({ state: 'attached' }); 
         return await this.locator.allInnerTexts();
     }
 }

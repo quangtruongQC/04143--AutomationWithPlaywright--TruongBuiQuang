@@ -1,12 +1,13 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/login-page';
-import { ProfilePage } from '../pages/profile-page';
+﻿import { test } from '@playwright/test';
 import { BookStorePage } from '../pages/book-store-page';
-import * as bookData from '../data/bookData.json';
 
-
+/**
+ * Book Store search functionality tests.
+ * Verifies that searching the Book Store returns only books matching the
+ * given keyword, case-insensitively.
+ */
 test.describe('Book Search Functionality', () => {
-    
+
     let bookStorePage: BookStorePage;
 
     test.beforeEach(async ({ page }) => {
@@ -14,29 +15,13 @@ test.describe('Book Search Functionality', () => {
         await bookStorePage.gotoBookStorePage();
     });
 
-    test('Search book with multiple results (case-insensitive)', async () => {
-        await test.step('Search with "Design"', async () => {
-            await bookStorePage.searchBook('Design');
-            
-            const books = await bookStorePage.getDisplayedBooks();
-            
-            const hasMatch = books
-                .filter(text => text.trim() !== '') 
-                .some(book => book.toLowerCase().includes('design'));
-            
-            expect(hasMatch, 'Expected at least one book to match "Design"').toBeTruthy();
+    // Keywords to test for case-insensitive matching behavior.
+    const keywords = ['Design', 'design'];
+
+    for (const keyword of keywords) {
+        test(`Search book with "${keyword}" returns only books matching the keyword (case-insensitive)`, async () => {
+            await bookStorePage.searchBook(keyword);
+            await bookStorePage.verifyOnlyMatchingBooks(keyword);
         });
-
-
-        await test.step('Search with "design"', async () => {
-            await bookStorePage.searchBook('design');
-            const books = await bookStorePage.getDisplayedBooks();
-            
-            const hasMatch = books
-                .filter(text => text.trim() !== '')
-                .some(book => book.toLowerCase().includes('design'));
-
-            expect(hasMatch, 'Expected at least one book to match "design"').toBeTruthy();
-        });
-    });
+    }
 });

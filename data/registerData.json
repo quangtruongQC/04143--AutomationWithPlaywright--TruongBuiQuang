@@ -1,0 +1,22 @@
+{
+  "requiredFieldsData": {
+    "firstName": "John222",
+    "lastName": "Doe222",
+    "email": "john222.doe@example.com",
+    "gender": "Other",
+    "mobile": "1234567890"
+  },
+  "allFieldsData": {
+    "firstName": "Alice222",
+    "lastName": "Smith222",
+    "email": "alice222.smith@example.com",
+    "gender": "Male",
+    "mobile": "0987654321",
+    "dateOfBirth": "18 Dec 2000",
+    "subject": "Maths",
+    "hobbies": ["Sports", "Reading"],
+    "address": "222 CentralPark, City",
+    "state": "NCR",
+    "city": "Delhi"
+  }
+}
