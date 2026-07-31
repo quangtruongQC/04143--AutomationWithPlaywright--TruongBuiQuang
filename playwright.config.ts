@@ -1,21 +1,28 @@
 import { defineConfig, devices } from '@playwright/test';
+import { BASE_URL } from './config/url';
+
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './tests',
-  
-  // Clean execution settings
-  fullyParallel: false, // Run tests sequentially
-  workers: 1,           // One test at a time
-  
+
+  // Run in parallel by default: each test gets its own isolated browser context,
+  // and page objects always navigate fresh, so there's no shared state between tests.
+  // Override with `npx playwright test --workers=1` locally if you need strict ordering.
+  fullyParallel: false,
+  workers: 1, // let Playwright pick a sensible worker count locally
+
   reporter: 'html',
-  
+
   use: {
-    baseURL: 'https://demoqa.com',
-    
+    baseURL: BASE_URL, // single source of truth, shared with config/url.ts
+
     // IMPORTANT: No storageState line here.
     // Every test starts with a fresh, empty browser.
-    
-    headless: false, // Browser pops up
+
+    // Headed locally (handy while developing/debugging), always headless on CI
+    // (CI runners have no display server, so headed mode would fail there).
+    headless: isCI,
     trace: 'on',
     screenshot: 'on',
     video: 'retain-on-failure',

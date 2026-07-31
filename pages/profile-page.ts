@@ -1,29 +1,25 @@
 import { Page } from '@playwright/test';
 import { Element } from '../core/elements/element';
-import { BASE_URL,DEMOQA_ENDPOINT } from '../config/url';
+import { DEMOQA_ENDPOINT } from '../config/url';
+import { BasePage } from './base-page';
 
-
-
-
-export class ProfilePage {
-    addBook(bookName: string) {
-        throw new Error('Method not implemented.');
-    }
+export class ProfilePage extends BasePage {
     private searchBox: Element;
     private okModalButton: Element;
 
-    constructor(private page: Page) {
+    constructor(page: Page) {
+        super(page);
         this.searchBox = new Element(this.page, '#searchBox', 'Search Box');
         this.okModalButton = new Element(this.page, '#closeSmallModal-ok', 'OK Confirmation Button');
     }
 
     async gotoProfilePage() {
-        await this.page.goto(DEMOQA_ENDPOINT.PROFILE);
+        await this.navigateTo(DEMOQA_ENDPOINT.PROFILE);
     }
 
     async searchBook(bookName: string) {
         await this.gotoProfilePage();
-        await this.searchBox.fill(''); 
+        // `fill()` đã tự động clear giá trị cũ trước khi nhập, nên không cần fill('') riêng.
         await this.searchBox.fill(bookName);
     }
 
@@ -37,15 +33,16 @@ export class ProfilePage {
     }
 
     async verifyBookIsPresent(bookName: string) {
-        const bookSelector = `//a[text()="${bookName}"]`;
-        const bookElement = new Element(this.page, bookSelector, `Book Title: ${bookName}`);
-        await bookElement.shouldBeVisible();
+        await this.bookLinkByTitle(bookName).shouldBeVisible();
     }
+
     async verifyBookIsGone(bookName: string) {
         await this.searchBox.fill('');
+        await this.bookLinkByTitle(bookName).shouldNotBeVisible();
+    }
 
-        const bookSelector = `//a[text()="${bookName}"]`;
-        const bookElement = new Element(this.page, bookSelector, `Book Title: ${bookName}`);
-        await bookElement.shouldNotBeVisible();
+    /** Builds the locator for a book title link, by exact text match. */
+    private bookLinkByTitle(bookName: string): Element {
+        return new Element(this.page, `//a[text()="${bookName}"]`, `Book Title: ${bookName}`);
     }
 }

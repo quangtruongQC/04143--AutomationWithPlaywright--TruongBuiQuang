@@ -50,6 +50,12 @@ export class Element {
         await this.locator.waitFor({ state, timeout });
     }
 
+    async press(key: string) {
+        console.log(`Action: Pressing '${key}' on '${this.description}'`);
+        await this.locator.waitFor({ state: 'visible' });
+        await this.locator.press(key);
+    }
+
     async getAllTexts(): Promise<string[]> {
         console.log(`Action: Retrieving all text strings from list '${this.description}'`);
         return await this.locator.allInnerTexts();

@@ -1,14 +1,13 @@
 import { Page, expect } from '@playwright/test';
 import { Element } from '../core/elements/element';
-import { BASE_URL, DEMOQA_ENDPOINT } from '../config/url';
-import * as registerData from '../data/registerData.json';
+import { DEMOQA_ENDPOINT } from '../config/url';
+import { RegisterFormData, FullRegisterFormData } from '../core/types/register-data';
+import { BasePage } from './base-page';
 
-
-export class RegistrationPage {
+export class RegistrationPage extends BasePage {
     private firstNameInput: Element;
     private lastNameInput: Element;
     private emailInput: Element;
-    private genderRadio: Element;
     private mobileInput: Element;
     private dateInput: Element;
     private subjectInput: Element;
@@ -16,13 +15,12 @@ export class RegistrationPage {
     private stateInput: Element;
     private cityInput: Element;
     private submitBtn: Element;
-    private successModal: Element;
 
-    constructor(private page: Page) {
+    constructor(page: Page) {
+        super(page);
         this.firstNameInput = new Element(this.page, '#firstName', 'First Name Input');
         this.lastNameInput = new Element(this.page, '#lastName', 'Last Name Input');
         this.emailInput = new Element(this.page, '#userEmail', 'Email Input');
-        this.genderRadio = new Element(this.page, 'input[name="gender"]', 'Gender Radio Buttons');
         this.mobileInput = new Element(this.page, '#userNumber', 'Mobile Input');
         this.dateInput = new Element(this.page, '#dateOfBirthInput', 'Date of Birth Input');
         this.subjectInput = new Element(this.page, '#subjectsInput', 'Subjects Input');
@@ -31,11 +29,10 @@ export class RegistrationPage {
         this.cityInput = new Element(this.page, '#city', 'City Dropdown');
 
         this.submitBtn = new Element(this.page, '#submit', 'Submit Button');
-        this.successModal = new Element(this.page, '#example-modal-sizes-title-lg', 'Success Modal Title');
     }
 
     async gotoRegistrationPage() {
-        await this.page.goto(DEMOQA_ENDPOINT.REGISTRATION);
+        await this.navigateTo(DEMOQA_ENDPOINT.REGISTRATION);
         await this.page.addStyleTag({
             content: `
                 * {
@@ -46,7 +43,7 @@ export class RegistrationPage {
         });
     }
 
-    async fillRequiredFieldsForm(registerData: any) {
+    async fillRequiredFieldsForm(registerData: RegisterFormData) {
         await this.firstNameInput.fill(registerData.firstName);
         await this.lastNameInput.fill(registerData.lastName);
         await this.emailInput.fill(registerData.email);
@@ -56,16 +53,14 @@ export class RegistrationPage {
 
     async selectDateOfBirth(dateStr: string) {
         await this.dateInput.click();
-
-        const rawLocator = this.page.locator('#dateOfBirthInput');
-        await rawLocator.press('Control+A');
+        await this.dateInput.press('Control+A');
         await this.dateInput.fill(dateStr);
-        await rawLocator.press('Enter');
+        await this.dateInput.press('Enter');
     }
 
     async selectSubjects(subject: string) {
         await this.subjectInput.fill(subject);
-        await this.page.locator('#subjectsInput').press('Enter');
+        await this.subjectInput.press('Enter');
     }
 
     async selectHobbies(hobbies: string[]) {
@@ -86,7 +81,7 @@ export class RegistrationPage {
         await this.page.locator(`div[id^="react-select-4-option"]:text-is("${city}")`).click();
     }
 
-    async fillAllFieldsForm(registerData: any) {
+    async fillAllFieldsForm(registerData: FullRegisterFormData) {
         await this.fillRequiredFieldsForm(registerData);
         await this.selectDateOfBirth(registerData.dateOfBirth);
         await this.selectSubjects(registerData.subject);

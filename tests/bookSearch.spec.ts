@@ -12,7 +12,6 @@ test.describe('Book Search Functionality', () => {
 
     test.beforeEach(async ({ page }) => {
         bookStorePage = new BookStorePage(page);
-        await bookStorePage.gotoBookStorePage();
     });
 
     // Keywords to test for case-insensitive matching behavior.

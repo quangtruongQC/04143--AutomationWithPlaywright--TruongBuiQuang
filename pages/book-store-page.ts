@@ -1,8 +1,9 @@
-﻿import { Page, expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { Element } from '../core/elements/element';
 import { DEMOQA_ENDPOINT } from '../config/url';
+import { BasePage } from './base-page';
 
-export class BookStorePage {
+export class BookStorePage extends BasePage {
     /**
      * Tuning values used by the search-result stabilization logic.
      * - MAX_STABILIZE_ATTEMPTS: max polling iterations waiting for results to settle.
@@ -17,15 +18,15 @@ export class BookStorePage {
     private addToCollectionBtn: Element;
     private bookItems: Element;
 
-    constructor(private page: Page) {
+    constructor(page: Page) {
+        super(page);
         this.searchBox = new Element(this.page, '#searchBox', 'Book Search Input');
         this.addToCollectionBtn = new Element(this.page, 'button:has-text("Add To Your Collection")', 'Add To Collection Button');
         this.bookItems = new Element(this.page, 'table tbody tr td:nth-child(2) a', 'List of Book Titles');
     }
 
-
     async gotoBookStorePage() {
-        await this.page.goto(DEMOQA_ENDPOINT.BOOKSTORE);
+        await this.navigateTo(DEMOQA_ENDPOINT.BOOKSTORE);
     }
 
     /**
