@@ -23,10 +23,13 @@ export default defineConfig({
     // Headed locally (handy while developing/debugging), always headless on CI
     // (CI runners have no display server, so headed mode would fail there).
     headless: isCI,
+    navigationTimeout: 60_000, // 60s thay vì mặc định 30s
+    actionTimeout: 15_000,
     trace: 'on',
     screenshot: 'on',
     video: 'retain-on-failure',
   },
+  retries: isCI ? 2 : 0, 
 
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

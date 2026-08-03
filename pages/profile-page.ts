@@ -19,7 +19,6 @@ export class ProfilePage extends BasePage {
 
     async searchBook(bookName: string) {
         await this.gotoProfilePage();
-        // `fill()` đã tự động clear giá trị cũ trước khi nhập, nên không cần fill('') riêng.
         await this.searchBox.fill(bookName);
     }
 
@@ -41,7 +40,6 @@ export class ProfilePage extends BasePage {
         await this.bookLinkByTitle(bookName).shouldNotBeVisible();
     }
 
-    /** Builds the locator for a book title link, by exact text match. */
     private bookLinkByTitle(bookName: string): Element {
         return new Element(this.page, `//a[text()="${bookName}"]`, `Book Title: ${bookName}`);
     }

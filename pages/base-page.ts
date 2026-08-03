@@ -7,6 +7,6 @@ export abstract class BasePage {
     constructor(protected page: Page) {}
 
     protected async navigateTo(url: string) {
-        await this.page.goto(url);
-    }
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' });
+}
 }

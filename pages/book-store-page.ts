@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+﻿import { expect, Page } from '@playwright/test';
 import { Element } from '../core/elements/element';
 import { DEMOQA_ENDPOINT } from '../config/url';
 import { BasePage } from './base-page';
@@ -63,12 +63,9 @@ export class BookStorePage extends BasePage {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             await this.page.waitForTimeout(intervalMs);
             const snapshot = await this.getResultsSnapshot();
-
-            // Skip the transient empty state while results are being reloaded.
             const isTransientLoadingState = snapshot === '[]';
 
             if (!isTransientLoadingState && snapshot === previousSnapshot) {
-                // Two identical, non-empty snapshots -> results are stable.
                 return;
             }
             previousSnapshot = snapshot;
@@ -93,23 +90,17 @@ export class BookStorePage extends BasePage {
      * Adds a specific book to the user's collection.
      * @param bookName - The exact book title to add to the collection.
      */
-    async addBookToCollection(bookName: string) {
+        async addBookToCollection(bookName: string) {
         await this.searchBook(bookName);
-
-        const specificBookLink = new Element(
-            this.page,
-            `//span[@id='see-book-${bookName}']//a`,
-            `Book Link: ${bookName}`
-        );
+        const specificBookLink = new Element(this.page, `//span[@id='see-book-${bookName}']//a`, `Book Link: ${bookName}`);
         await specificBookLink.click();
 
-        // The app shows a dialog (e.g. "Book added to your collection!"); accept it.
-        this.page.once('dialog', async dialog => {
-            console.log(`Alert message: ${dialog.message()}`);
-            await dialog.accept();
-        });
-
+        const dialogPromise = this.page.waitForEvent('dialog');
         await this.addToCollectionBtn.click();
+
+        const dialog = await dialogPromise;
+        console.log(`Alert message: ${dialog.message()}`);
+        await dialog.accept();
     }
 
     /**
