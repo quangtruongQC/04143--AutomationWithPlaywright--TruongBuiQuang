@@ -1,171 +1,122 @@
-# Test Suite Overview
+# Playwright + TypeScript Automation Framework
 
-This document provides an overview of the three main Playwright test suites in the
-`tests/` folder, explaining their purpose, how they are structured, and the Page
-Object Models (POMs) they depend on.
+[![Playwright Tests](https://github.com/quangtruongQC/04143--AutomationWithPlaywright--TruongBuiQuang/actions/workflows/playwright.yml/badge.svg)](https://github.com/quangtruongQC/04143--AutomationWithPlaywright--TruongBuiQuang/actions/workflows/playwright.yml)
 
----
+An end-to-end test automation framework built with **Playwright** and **TypeScript**,
+following the **Page Object Model (POM)** pattern. It targets the public
+[DemoQA](https://demoqa.com) practice site and covers book store search/delete flows
+and the student registration form, running cross-browser (Chromium, Firefox, WebKit)
+on every push via GitHub Actions.
 
-## Table of Contents
-
-1. [Common Structure](#common-structure)
-2. [Book Search Functionality (`bookSearch.spec.ts`)](#book-search-functionality-booksearchspect)
-3. [Book Delete (`bookDelete.spec.ts`)](#book-delete-bookdeletespect)
-4. [Student Registration Form (`Registraion.spec.ts`)](#student-registration-form-registraionspect)
-5. [How to Run](#how-to-run)
+> 📄 Looking for a breakdown of individual test suites, what each one verifies, and
+> the page objects/data files behind them? See [`TEST_OVERVIEW.md`](./TEST_OVERVIEW.md).
 
 ---
 
-## Common Structure
+## Tech Stack
 
-All test suites follow the **Page Object Model (POM)** pattern:
-
-- Test files live under `tests/`.
-- Page Object classes live under `pages/`.
-- Test data lives under `data/` as JSON files.
-- Reusable element wrappers live in `core/elements/`.
-
-Each test file uses a `test.describe(...)` block, sets up its page object(s) in a
-`test.beforeEach(...)` hook, and keeps the actual test steps thin and declarative
-by delegating actions and verification to the Page Objects.
+- **[Playwright](https://playwright.dev/)** — browser automation & test runner
+- **TypeScript** (strict mode) — type-safe page objects and test data
+- **GitHub Actions** — CI running the full suite on every push
+- **Page Object Model** — custom `Element` wrapper + `BasePage` for shared navigation logic
 
 ---
 
-## Book Search Functionality (`bookSearch.spec.ts`)
+## Project Structure
 
-**Purpose**
-
-Verify that searching for a book on the Book Store page returns *only* books
-matching the given keyword, and that the matching is **case-insensitive**.
-
-| Item | Details |
-|------|---------|
-| **File** | `tests/bookSearch.spec.ts` |
-| **POM used** | `BookStorePage` (`pages/book-store-page.ts`) |
-| **Data used** | Inline array of keywords: `['Design', 'design']` |
-
-### Tests
-
-- `Search book with "<keyword>" returns only books matching the keyword (case-insensitive)`
-  - Iterates over `['Design', 'design']`, generating one test per keyword.
-  - Searches for the keyword.
-  - Calls `verifyOnlyMatchingBooks(keyword)` which asserts that:
-    1. At least one result is returned (uses `expect.poll` for stability).
-    2. Every returned book title contains the keyword (case-insensitive).
-
-### Maintenance Notes
-
-The assertion logic lives in `BookStorePage.verifyOnlyMatchingBooks(...)`, so if the
-verification rules change, they are updated in one place. Adding more keywords to the
-`keywords` array automatically generates more test cases.
-
----
-
-## Book Delete (`bookDelete.spec.ts`)
-
-**Purpose**
-
-Verify the full delete flow: add a book to the logged-in user's collection, then
-delete it from the profile and confirm it is no longer present.
-
-| Item | Details |
-|------|---------|
-| **File** | `tests/bookDelete.spec.ts` |
-| **POMs used** | `LoginPage`, `BookStorePage`, `ProfilePage` |
-| **Data used** | `loginData.json` (credentials), `bookData.json` (book title) |
-
-### Setup (`beforeEach`)
-
-1. Instantiates `LoginPage`, `BookStorePage`, and `ProfilePage`.
-2. Navigates to the login page.
-3. Logs in using the valid account from `loginData.json`.
-
-### Tests
-
-- `Verify delete a book successfully`
-  1. `BookStorePage.addBookToCollection(bookTitle)` – searches for and adds the book.
-  2. `ProfilePage.searchBook(bookTitle)` – navigates to profile and filters for the book.
-  3. `ProfilePage.verifyBookIsPresent(bookTitle)` – confirms the book is listed.
-  4. `ProfilePage.deleteBook(bookTitle)` – deletes the book and confirms the modal.
-  5. `ProfilePage.verifyBookIsGone(bookTitle)` – confirms the book is no longer listed.
-
-### Maintenance Notes
-
-The book title to delete is read from `data/bookData.json`
-(`bookData.bookToDelete.title`), so changing the target book requires editing only the
-JSON data file, not the test logic.
+```
+.
+├── .github/workflows/
+│   └── playwright.yml        # CI: install, run tests cross-browser, upload report
+├── config/
+│   └── url.ts                # Single source of truth for base URL & page endpoints
+├── core/
+│   ├── elements/
+│   │   └── element.ts        # Thin wrapper around Playwright locators (click, fill,
+│   │                          #  press, getAllTexts, visibility assertions...) with
+│   │                          #  built-in action logging for easier debugging/tracing
+│   └── types/
+│       └── register-data.ts  # Typed shapes for registration test data
+├── data/
+│   ├── bookData.json
+│   ├── loginData.json
+│   └── registerData.json     # Test data kept out of test logic (edit data, not code)
+├── pages/
+│   ├── base-page.ts          # Shared navigation logic all page objects extend
+│   ├── book-store-page.ts
+│   ├── login-page.ts
+│   ├── profile-page.ts
+│   └── registration-page.ts
+├── tests/
+│   ├── bookDelete.spec.ts
+│   ├── bookSearch.spec.ts
+│   └── registration.spec.ts
+├── playwright.config.ts
+├── tsconfig.json
+└── TEST_OVERVIEW.md           # Detailed per-suite documentation
+```
 
 ---
 
-## Student Registration Form (`Registraion.spec.ts`)
+## Getting Started
 
-**Purpose**
+```bash
+# Install dependencies
+npm install
 
-Verify that the student registration form can be submitted with **required** fields
-only, and with **all** fields, and that the success modal correctly reflects the
-submitted data.
+# Install Playwright browsers (Chromium, Firefox, WebKit)
+npx playwright install --with-deps
+```
 
-> Note: The file name `Registraion.spec.ts` is a historical spelling; it is kept to
-> avoid breaking existing CI/runner references.
+### Available scripts
 
-| Item | Details |
-|------|---------|
-| **File** | `tests/Registraion.spec.ts` |
-| **POM used** | `RegistrationPage` (`pages/registration-page.ts`) |
-| **Data used** | `registerData.json` (`requiredFieldsData`, `allFieldsData`) |
+| Command                | Description                                      |
+|-------------------------|--------------------------------------------------|
+| `npm test`             | Run the full suite headless, all 3 browsers       |
+| `npm run test:headed`  | Run with a visible browser window (local debugging) |
+| `npm run test:ui`      | Open Playwright's interactive UI mode             |
+| `npm run test:report`  | Open the last HTML test report                    |
+| `npm run typecheck`    | Run `tsc --noEmit` to type-check the project       |
 
-### Tests
-
-1. **`Register student with required fields`**
-   - Fills required fields and submits.
-   - Verifies the modal title and the submitted `Student Name`, `Student Email`,
-     `Gender`, and `Mobile` values.
-
-2. **`Register student with all fields`**
-   - Fills all fields (including date of birth, subjects, hobbies, address,
-     state, and city) and submits.
-   - Verifies the modal title and all submitted values.
-
-### Maintenance Notes
-
-The repeated modal assertions are wrapped in two helpers on `RegistrationPage`:
-
-- `verifyModalTitle(expectedTitle)`
-- `verifySubmittedValue(labelName, expected)`
-
-These keep the test bodies readable and DRY. The `getSubmittedValueByLabel(...)`
-method returns a trimmed value, so callers do not need to call `.trim()` manually.
-
----
-
-## How to Run
-
-Run a single spec file:
-
+Run a single spec file directly:
 ```bash
 npx playwright test tests/bookSearch.spec.ts
-npx playwright test tests/bookDelete.spec.ts
-npx playwright test tests/Registraion.spec.ts
-```
-
-Run all specs:
-
-```bash
-npx playwright test
-```
-
-Run with the headed browser for debugging:
-
-```bash
-npx playwright test --headed
 ```
 
 ---
 
-## Dependency Map
+## Continuous Integration
 
-| Test File | Page Objects | Data Files |
-|-----------|--------------|------------|
-| `bookSearch.spec.ts` | `BookStorePage` | – (inline keywords) |
-| `bookDelete.spec.ts` | `LoginPage`, `BookStorePage`, `ProfilePage` | `loginData.json`, `bookData.json` |
-| `Registraion.spec.ts` | `RegistrationPage` | `registerData.json` |
+Every push runs the full suite headless across Chromium, Firefox, and WebKit via
+GitHub Actions (see `.github/workflows/playwright.yml`), then uploads the HTML
+report as a build artifact.
+
+---
+
+## Engineering Highlights
+
+A few design decisions worth calling out (see [`TEST_OVERVIEW.md`](./TEST_OVERVIEW.md#engineering-notes)
+for full details):
+
+- **`BasePage`** centralizes navigation so every page object shares one
+  `navigateTo()` implementation instead of duplicating `page.goto(...)`.
+- **`Element` wrapper** standardizes common actions (`click`, `fill`, `press`,
+  `getAllTexts`, visibility assertions) with consistent logging, so traces/reports
+  read like a readable action log rather than raw Playwright calls.
+- **`waitUntil: 'domcontentloaded'`** is used for navigation instead of the
+  Playwright default (`'load'`), since DemoQA loads a number of third-party
+  ads/analytics resources that delay the `'load'` event well beyond what's needed
+  for the page to be interactive — this was the root cause of intermittent
+  navigation timeouts on CI.
+- **CI-only retries** are enabled because the suite exercises a real third-party
+  website rather than a mocked environment, so a small, explicit retry budget is a
+  deliberate trade-off against genuine external network flakiness.
+- **Dialog handling on WebKit**: `page.waitForEvent('dialog')` is registered
+  *before* the action that triggers it, avoiding a timing race that WebKit is more
+  sensitive to than Chromium/Firefox.
+
+---
+
+## Author
+
+**Truong Bui Quang**

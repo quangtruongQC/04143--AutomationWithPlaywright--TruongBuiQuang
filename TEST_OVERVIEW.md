@@ -9,9 +9,9 @@ Object Models (POMs) they depend on.
 ## Table of Contents
 
 1. [Common Structure](#common-structure)
-2. [Book Search Functionality (`bookSearch.spec.ts`)](#book-search-functionality-booksearchspect)
-3. [Book Delete (`bookDelete.spec.ts`)](#book-delete-bookdeletespect)
-4. [Student Registration Form (`Registraion.spec.ts`)](#student-registration-form-registraionspect)
+2. [Book Search Functionality (`bookSearch.spec.ts`)](#book-search-functionality-booksearchspects)
+3. [Book Delete (`bookDelete.spec.ts`)](#book-delete-bookdeletespects)
+4. [Student Registration Form (`registration.spec.ts`)](#student-registration-form-registrationspects)
 5. [How to Run](#how-to-run)
 
 ---
@@ -97,7 +97,7 @@ JSON data file, not the test logic.
 
 ---
 
-## Student Registration Form (`Registraion.spec.ts`)
+## Student Registration Form (`registration.spec.ts`)
 
 **Purpose**
 
@@ -105,12 +105,9 @@ Verify that the student registration form can be submitted with **required** fie
 only, and with **all** fields, and that the success modal correctly reflects the
 submitted data.
 
-> Note: The file name `Registraion.spec.ts` is a historical spelling; it is kept to
-> avoid breaking existing CI/runner references.
-
 | Item | Details |
 |------|---------|
-| **File** | `tests/Registraion.spec.ts` |
+| **File** | `tests/registration.spec.ts` |
 | **POM used** | `RegistrationPage` (`pages/registration-page.ts`) |
 | **Data used** | `registerData.json` (`requiredFieldsData`, `allFieldsData`) |
 
@@ -138,6 +135,29 @@ method returns a trimmed value, so callers do not need to call `.trim()` manuall
 
 ---
 
+## Engineering Notes
+
+A few deliberate trade-offs were made while stabilizing this suite on CI
+(GitHub Actions), where DemoQA's real-world network behavior differs from a local
+dev machine:
+
+- **`waitUntil: 'domcontentloaded'` instead of the default `'load'`** when
+  navigating (`BasePage.navigateTo`). DemoQA loads a number of third-party
+  ads/analytics resources that make the `'load'` event fire much later than the
+  page actually being interactive, which caused intermittent 30s navigation
+  timeouts on CI.
+- **`retries` enabled only on CI** (`playwright.config.ts`). The suite targets a
+  real, third-party website rather than a mocked/local environment, so occasional
+  network flakiness on the CI runner is expected and is handled with a small,
+  explicit retry budget rather than silently increasing timeouts indefinitely.
+- **`waitForEvent('dialog')` registered *before* the triggering click** in
+  `BookStorePage.addBookToCollection`. WebKit handles native `dialog` events with
+  different timing than Chromium/Firefox; registering the listener before the
+  action that raises the dialog avoids a race condition where the dialog could be
+  missed.
+
+---
+
 ## How to Run
 
 Run a single spec file:
@@ -145,7 +165,7 @@ Run a single spec file:
 ```bash
 npx playwright test tests/bookSearch.spec.ts
 npx playwright test tests/bookDelete.spec.ts
-npx playwright test tests/Registraion.spec.ts
+npx playwright test tests/registration.spec.ts
 ```
 
 Run all specs:
@@ -167,5 +187,5 @@ npx playwright test --headed
 | Test File | Page Objects | Data Files |
 |-----------|--------------|------------|
 | `bookSearch.spec.ts` | `BookStorePage` | – (inline keywords) |
-| `bookDelete.spec.ts` | `LoginPage`, `BookStorePage`, `ProfilePage` | `loginData.json`, `bookData.json` |
-| `Registraion.spec.ts` | `RegistrationPage` | `registerData.json` |
+| `bookDelete.spec.ts` | `LoginPage`, `F`, `ProfilePage` | `loginData.json`, `bookData.json` |
+| `registration.spec.ts` | `RegistrationPage` | `registerData.json` |
